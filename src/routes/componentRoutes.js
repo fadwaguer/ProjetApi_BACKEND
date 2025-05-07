@@ -144,7 +144,7 @@ const router = express.Router();
  */
 
 // Lister les composants d'une catégorie
-router.get('/category/:categoryId', protect, getComponentsByCategory);
+router.get('/category/:categoryName', protect, getComponentsByCategory);
 
 // Détail d'un composant
 router.get('/:id', protect, getComponentDetails);

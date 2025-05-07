@@ -7,6 +7,4 @@ const componentSchema = new mongoose.Schema({
   specs: { type: Object, required: true },
 });
 
-componentSchema.index({ name: 1, category: 1 }, { unique: true });
-
 module.exports = mongoose.model('Component', componentSchema);

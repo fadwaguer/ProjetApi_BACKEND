@@ -14,7 +14,7 @@ const getCategories = async (req, res) => {
 const addCategory = async (req, res) => {
   try {
     const { name } = req.body;
-    const existingCategory = await Category.findOne({ name });
+    const existingCategory = await Category.findOne({ name: { $regex: new RegExp('^' + name + '$', 'i') } });
     if (existingCategory) {
       return res.status(400).json({ message: 'La catégorie existe déjà' });
     }
@@ -30,19 +30,22 @@ const addCategory = async (req, res) => {
 // Mettre à jour une catégorie
 const updateCategory = async (req, res) => {
   try {
-    const { id } = req.params;
     const { name } = req.body;
+    const { categoryName } = req.params;
 
-    const category = await Category.findById(id);
+    // Vérification si la catégorie à mettre à jour existe
+    const category = await Category.findOne({ name: { $regex: new RegExp('^' + categoryName + '$', 'i') } });
     if (!category) {
       return res.status(404).json({ message: 'Catégorie non trouvée' });
     }
 
-    const existingCategory = await Category.findOne({ name });
+    // Vérifier si une autre catégorie avec le nom mis à jour existe déjà
+    const existingCategory = await Category.findOne({ name: { $regex: new RegExp('^' + name + '$', 'i') } });
     if (existingCategory) {
       return res.status(400).json({ message: 'Une catégorie avec ce nom existe déjà' });
     }
 
+    // Mise à jour de la catégorie
     category.name = name || category.name;
     await category.save();
 
@@ -52,12 +55,14 @@ const updateCategory = async (req, res) => {
   }
 };
 
+
 // Supprimer une catégorie
 const deleteCategory = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { categoryName } = req.params;
 
-    const category = await Category.findById(id);
+    // Recherche insensible à la casse pour la catégorie
+    const category = await Category.findOne({ name: { $regex: new RegExp('^' + categoryName + '$', 'i') } });
     if (!category) {
       return res.status(404).json({ message: 'Catégorie non trouvée' });
     }
@@ -68,5 +73,6 @@ const deleteCategory = async (req, res) => {
     res.status(500).json({ message: 'Erreur lors de la suppression de la catégorie', error });
   }
 };
+
 
 module.exports = { getCategories, addCategory, updateCategory, deleteCategory };

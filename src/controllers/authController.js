@@ -8,7 +8,7 @@ const registerUser = async (req, res) => {
 
   try {
     // Vérifier si l'utilisateur existe déjà
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: { $regex: new RegExp('^' + email + '$', 'i') } });
     if (existingUser) {
       return res.status(400).json({ message: 'Utilisateur déjà existant' });
     }
@@ -33,6 +33,7 @@ const registerUser = async (req, res) => {
   }
 };
 
+
 // Authentifier l'utilisateur et générer un JWT
 const login = async (req, res) => {
   const { email, password } = req.body;
@@ -54,7 +55,7 @@ const login = async (req, res) => {
     const accessToken = jwt.sign(
       { userId: user._id },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: '24h' }
     );
 
     const refreshToken = jwt.sign(
