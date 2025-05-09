@@ -1,44 +1,108 @@
 const Component = require('../models/Component');
 const Category = require('../models/Category');
+const Price = require('../models/Price');
 
-// Lister les composants par catégorie
 const getComponentsByCategory = async (req, res) => {
   try {
     const { categoryName } = req.params;
-    
+
     // Vérifier si la catégorie existe par son nom
-    const categoryExists = await Category.findOne({ name: { $regex: new RegExp('^' + categoryName + '$', 'i') } });
+    const categoryExists = await Category.findOne({
+      name: { $regex: new RegExp('^' + categoryName + '$', 'i') },
+    });
     if (!categoryExists) {
-      return res.status(404).json({ message: 'Catégorie non trouvée' });
+      return res.status(404).json({ message: 'Catégorie non trouvée.' });
     }
 
-    // Récupérer les composants en fonction de la catégorie
-    const components = await Component.find({ category: categoryExists._id }).populate('category');
+    // Récupérer les composants dans cette catégorie
+    const components = await Component.find({ category: categoryExists._id });
+
     if (components.length === 0) {
       return res.status(404).json({ message: 'Aucun composant trouvé dans cette catégorie.' });
     }
-    res.status(200).json(components);
+
+    // Récupérer les prix associés aux composants
+    const componentIds = components.map(component => component._id);
+    const prices = await Price.find({ component: { $in: componentIds } }).populate('partner', 'name image');
+
+    // Associer les prix aux composants
+    const formattedComponents = components.map(component => {
+      const componentPrices = prices
+        .filter(price => price.component.toString() === component._id.toString())
+        .map(price => ({
+          partnerId: price.partner._id,
+          partnerName: price.partner.name,
+          partnerImage: price.partner.image
+            ? `data:${price.partner.image.contentType};base64,${price.partner.image.data.toString('base64')}`
+            : null,
+          price: price.price,
+        }));
+
+      return {
+        id: component._id,
+        name: component.name,
+        category: categoryExists.name,
+        brand: component.brand,
+        specs: component.specs,
+        prices: componentPrices,
+      };
+    });
+
+    res.status(200).json(formattedComponents);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Une erreur est survenue lors de la récupération des composants.', error: error.message });
+    res.status(500).json({
+      message: 'Une erreur est survenue lors de la récupération des composants.',
+      error: error.message,
+    });
   }
 };
+
 
 
 // Détail d'un composant
 const getComponentDetails = async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Récupérer le composant et sa catégorie
     const component = await Component.findById(id).populate('category');
     if (!component) {
       return res.status(404).json({ message: 'Composant inexistant' });
     }
-    res.status(200).json(component);
+
+    // Récupérer les prix associés à ce composant
+    const prices = await Price.find({ component: id }).populate('partner', 'name image');
+
+    // Formater les prix pour inclure les détails des partenaires
+    const formattedPrices = prices.map(price => ({
+      partnerId: price.partner._id,
+      partnerName: price.partner.name,
+      partnerImage: price.partner.image
+        ? `data:${price.partner.image.contentType};base64,${price.partner.image.data.toString('base64')}`
+        : null,
+      price: price.price,
+    }));
+
+    res.status(200).json({
+      component: {
+        id: component._id,
+        name: component.name,
+        category: component.category,
+        brand: component.brand,
+        specs: component.specs,
+      },
+      prices: formattedPrices,
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Une erreur est survenue lors de la récupération des détails du composant.', error: error.message });
+    res.status(500).json({
+      message: 'Une erreur est survenue lors de la récupération des détails du composant.',
+      error: error.message,
+    });
   }
 };
+
 
 // Ajouter un composant
 const addComponent = async (req, res) => {

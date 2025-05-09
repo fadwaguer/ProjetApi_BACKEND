@@ -69,21 +69,60 @@ const listPricesByComponent = async (req, res) => {
   }
 };
 
-
 // Calculer le coût total de la configuration
 const calculateTotalCost = async (req, res) => {
   try {
     const { componentIds } = req.body;
-    const components = await Promise.all(
-      componentIds.map(async (id) => {
-        const partner = await Partner.findOne({ 'componentPrices.component': id }, { 'componentPrices.$': 1 });
-        return partner ? partner.componentPrices[0].price : 0;
-      })
-    );
-    const totalCost = components.reduce((acc, price) => acc + price, 0);
+    if (!componentIds || !Array.isArray(componentIds) || componentIds.length === 0) {
+      return res.status(400).json({ message: 'Liste des composants manquante ou invalide.' });
+    }
+
+    let totalCost = 0;
+
+    // Calculer le coût total en cherchant le prix minimum de chaque composant
+    for (const componentId of componentIds) {
+      const component = await Component.findById(componentId);
+      if (!component) {
+        return res.status(404).json({ message: `Composant avec l'ID ${componentId} non trouvé.` });
+      }
+
+      // Trouver le prix minimum pour ce composant parmi tous les partenaires
+      const minPrice = await Price.aggregate([
+        { $match: { component: component._id } }, // Filtrer par composant
+        { $sort: { price: 1 } }, // Trier par prix croissant
+        { $limit: 1 } // Récupérer uniquement le prix minimum
+      ]);
+
+      if (minPrice.length > 0) {
+        totalCost += minPrice[0].price; // Ajouter le prix minimum du composant au coût total
+      } else {
+        return res.status(404).json({ message: `Aucun prix trouvé pour le composant ${component.name}.` });
+      }
+    }
+
+    // Retourner le coût total calculé
     res.status(200).json({ totalCost });
   } catch (error) {
-    res.status(500).json({ message: 'Erreur lors du calcul du coût total', error });
+    res.status(500).json({ message: 'Erreur lors du calcul du coût total.', error: error.message });
+  }
+};
+
+// Récupérer la liste des partenaires
+const getAllPartners = async (req, res) => {
+  try {
+    const partners = await Partner.find();
+
+    const data = partners.map(partner => ({
+      id: partner._id,
+      name: partner.name,
+      image: partner.image
+        ? `data:${partner.image.contentType};base64,${partner.image.data.toString('base64')}`
+        : null, // Retourner null si aucune image n'est disponible
+    }));
+
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur lors de la récupération des partenaires', error: error.message });
   }
 };
 
@@ -287,6 +326,7 @@ module.exports = {
   getPricesForAllComponents,
   listPricesByComponent,
   calculateTotalCost,
+  getAllPartners,
   addPartner,
   updatePartner,
   deletePartner,

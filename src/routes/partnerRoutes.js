@@ -9,6 +9,7 @@ const {
   addPriceForComponent,
   updatePriceForComponent,
   deletePriceForComponent,
+  getAllPartners,
 } = require('../controllers/partnerController');
 const { protect } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
@@ -271,6 +272,40 @@ router.put('/:id', protect, updatePartner);
  *         description: Erreur interne
  */
 router.delete('/:id', protect, deletePartner);
+
+/**
+ * @swagger
+ * /api/partners:
+ *   get:
+ *     summary: Récupérer tous les partenaires marchands
+ *     description: Récupère tous les partenaires marchands enregistrés.
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Liste des partenaires
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   partnerName:
+ *                     type: string
+ *                     description: "Nom du partenaire"
+ *                   partnerId:
+ *                     type: string
+ *                     description: "Identifiant du partenaire"
+ *                   image:
+ *                     type: string
+ *                     description: "Type MIME de l'image du partenaire (si disponible)"
+ *       401:
+ *         description: "Non autorisé (token manquant ou invalide)"
+ *       500:
+ *         description: "Erreur interne"
+ */
+router.get('/', protect, getAllPartners);
 
 /**
  * @swagger
