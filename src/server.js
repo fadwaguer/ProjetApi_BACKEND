@@ -1,6 +1,7 @@
 const express = require('express');
 const connectDB = require('./config/db');
 require('dotenv').config();
+const configurationRoutes = require('./routes/configurationRoutes');
 const partnerRoutes = require('./routes/partnerRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const componentRoutes = require('./routes/componentRoutes');
@@ -14,6 +15,7 @@ app.use(express.json());
 setupSwagger(app);
 
 // Routes
+app.use('/api/configurations', configurationRoutes);
 app.use('/api/partners', partnerRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/components', componentRoutes);
