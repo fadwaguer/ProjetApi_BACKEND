@@ -1,7 +1,34 @@
 const express = require('express');
 const router = express.Router();
 const { getCategories, addCategory, updateCategory, deleteCategory } = require('../controllers/categoryController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, adminOnly, publicAccess } = require('../middleware/authMiddleware');
+
+/**
+ * @swagger
+ * components:
+ *   securitySchemes:
+ *     BearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ *   schemas:
+ *     Partner:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *         name:
+ *           type: string
+ *         image:
+ *           type: string
+ *           description: URL de l'image
+ */
+
+/**
+ * @swagger
+ * security:
+ *   - BearerAuth: []
+ */
 
 /**
  * @swagger
@@ -102,15 +129,15 @@ const { protect } = require('../middleware/authMiddleware');
  */
 
 // Lister les catégories
-router.get('/', protect, getCategories);
+router.get('/', publicAccess, getCategories);
 
 // Ajouter une catégorie
-router.post('/', protect, addCategory);
+router.post('/', protect, adminOnly, addCategory);
 
 // Mettre à jour une catégorie
-router.put('/:id', protect, updateCategory);
+router.put('/:id', protect, adminOnly, updateCategory);
 
 // Supprimer une catégorie
-router.delete('/:id', protect, deleteCategory);
+router.delete('/:id', protect, adminOnly, deleteCategory);
 
 module.exports = router;

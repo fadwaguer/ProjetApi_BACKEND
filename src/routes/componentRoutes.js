@@ -6,9 +6,36 @@ const {
   updateComponent,
   deleteComponent,
 } = require('../controllers/componentController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, publicAccess, adminOnly } = require('../middleware/authMiddleware');
 
 const router = express.Router();
+
+/**
+ * @swagger
+ * components:
+ *   securitySchemes:
+ *     BearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ *   schemas:
+ *     Partner:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *         name:
+ *           type: string
+ *         image:
+ *           type: string
+ *           description: URL de l'image
+ */
+
+/**
+ * @swagger
+ * security:
+ *   - BearerAuth: []
+ */
 
 /**
  * @swagger
@@ -144,18 +171,18 @@ const router = express.Router();
  */
 
 // Lister les composants d'une catégorie
-router.get('/category/:categoryName', protect, getComponentsByCategory);
+router.get('/category/:categoryName', publicAccess, getComponentsByCategory);
 
 // Détail d'un composant
-router.get('/:id', protect, getComponentDetails);
+router.get('/:id', publicAccess, getComponentDetails);
 
 // Ajouter un composant
-router.post('/', protect, addComponent);
+router.post('/', protect, adminOnly, addComponent);
 
 // Mettre à jour un composant
-router.put('/:id', protect, updateComponent);
+router.put('/:id', protect, adminOnly, updateComponent);
 
 // Supprimer un composant
-router.delete('/:id', protect, deleteComponent);
+router.delete('/:id', protect, adminOnly, deleteComponent);
 
 module.exports = router;

@@ -11,7 +11,7 @@ const {
   deletePriceForComponent,
   getAllPartners,
 } = require('../controllers/partnerController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, publicAccess, adminOnly } = require('../middleware/authMiddleware');
 const upload = require('../middleware/uploadMiddleware');
 
 const router = express.Router();
@@ -80,7 +80,7 @@ const router = express.Router();
  *       500:
  *         description: Erreur interne
  */
-router.get('/component-prices', protect, getPricesForAllComponents);
+router.get('/component-prices', publicAccess, getPricesForAllComponents);
 
 /**
  * @swagger
@@ -120,7 +120,7 @@ router.get('/component-prices', protect, getPricesForAllComponents);
  *       500:
  *         description: Erreur interne
  */
-router.get('/components/:componentId/prices', protect, listPricesByComponent);
+router.get('/components/:componentId/prices', publicAccess, listPricesByComponent);
 
 /**
  * @swagger
@@ -149,7 +149,7 @@ router.get('/components/:componentId/prices', protect, listPricesByComponent);
  *       500:
  *         description: Erreur interne
  */
-router.post('/calculate-cost', protect, calculateTotalCost);
+router.post('/calculate-cost', publicAccess, calculateTotalCost);
 
 /**
  * @swagger
@@ -211,7 +211,7 @@ router.post('/calculate-cost', protect, calculateTotalCost);
  *                   type: string
  *                   example: "Détails de l'erreur interne."
  */
-router.post('/', protect, upload.single('image'), addPartner);
+router.post('/', protect, adminOnly, upload.single('image'), addPartner);
 
 /**
  * @swagger
@@ -244,7 +244,7 @@ router.post('/', protect, upload.single('image'), addPartner);
  *       500:
  *         description: Erreur interne
  */
-router.put('/:id', protect, updatePartner);
+router.put('/:id', protect, adminOnly, updatePartner);
 
 /**
  * @swagger
@@ -271,7 +271,7 @@ router.put('/:id', protect, updatePartner);
  *       500:
  *         description: Erreur interne
  */
-router.delete('/:id', protect, deletePartner);
+router.delete('/:id', protect, adminOnly, deletePartner);
 
 /**
  * @swagger
@@ -305,7 +305,7 @@ router.delete('/:id', protect, deletePartner);
  *       500:
  *         description: "Erreur interne"
  */
-router.get('/', protect, getAllPartners);
+router.get('/', publicAccess, getAllPartners);
 
 /**
  * @swagger
@@ -341,7 +341,7 @@ router.get('/', protect, getAllPartners);
  *       500:
  *         description: "Erreur interne"
  */
-router.post('/component-prices', protect, addPriceForComponent);
+router.post('/component-prices', protect, adminOnly, addPriceForComponent);
 
 /**
  * @swagger
@@ -380,7 +380,7 @@ router.post('/component-prices', protect, addPriceForComponent);
  *       500:
  *         description: "Erreur interne"
  */
-router.put('/component-prices/:id', protect, updatePriceForComponent);
+router.put('/component-prices/:id', protect, adminOnly, updatePriceForComponent);
 
 /**
  * @swagger
@@ -407,6 +407,6 @@ router.put('/component-prices/:id', protect, updatePriceForComponent);
  *       500:
  *         description: "Erreur interne"
  */
-router.delete('/component-prices/:id', protect, deletePriceForComponent);
+router.delete('/component-prices/:id', protect, adminOnly, deletePriceForComponent);
 
 module.exports = router;

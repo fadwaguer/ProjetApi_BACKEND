@@ -139,6 +139,16 @@ const exportConfigurationToPDF = async (req, res) => {
       res.status(500).json({ message: 'Erreur lors de l\'exportation de la configuration en PDF.', error });
     }
   };
+
+// lister les configurations avec les details de l'utilisateur (User)
+const getConfigurationsWithUserDetails = async (req, res) => {
+    try {
+        const configurations = await Configuration.find().populate('user', 'email');
+        res.status(200).json(configurations);
+    } catch (error) {
+        res.status(500).json({ message: 'Erreur lors de la récupération des configurations avec les détails de l\'utilisateur.', error });
+    }
+};
   
 module.exports = {
     createConfiguration,
@@ -147,4 +157,5 @@ module.exports = {
     updateConfiguration,
     deleteConfiguration,
     exportConfigurationToPDF,
+    getConfigurationsWithUserDetails,
 };

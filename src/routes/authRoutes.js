@@ -27,6 +27,12 @@ const router = express.Router();
  *                 type: string
  *                 description: "Mot de passe de l'utilisateur"
  *                 example: "password123"
+ *               role:
+ *                  type: string
+ *                  description: "Rôle de l'utilisateur (admin ou user)"
+ *                  example: "user"
+ *                  required: true
+ *                  enum: ["admin", "user"]
  *     responses:
  *       201:
  *         description: "Utilisateur créé avec succès"

@@ -4,7 +4,7 @@ const User = require('../models/User');
 
 // Inscription d'un utilisateur
 const registerUser = async (req, res) => {
-  const { email, password, name } = req.body;
+  const { email, password, name, role } = req.body;
 
   try {
     // Vérifier si l'utilisateur existe déjà
@@ -21,6 +21,7 @@ const registerUser = async (req, res) => {
       email,
       password: hashedPassword,
       name,
+      role: role || 'user',
     });
 
     await newUser.save();

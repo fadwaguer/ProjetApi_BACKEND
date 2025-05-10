@@ -20,6 +20,7 @@ app.use('/api/partners', partnerRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/components', componentRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/users', require('./routes/userRoutes'));
 
 // Connect to MongoDB
 connectDB();

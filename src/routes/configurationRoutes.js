@@ -6,10 +6,38 @@ const {
   updateConfiguration,
   deleteConfiguration,
   exportConfigurationToPDF,
+  getConfigurationsWithUserDetails,
 } = require('../controllers/configurationController');
-const { protect } = require('../middleware/authMiddleware');
+const { protect, adminOnly } = require('../middleware/authMiddleware');
 
 const router = express.Router();
+
+/**
+ * @swagger
+ * components:
+ *   securitySchemes:
+ *     BearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ *   schemas:
+ *     Partner:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *         name:
+ *           type: string
+ *         image:
+ *           type: string
+ *           description: URL de l'image
+ */
+
+/**
+ * @swagger
+ * security:
+ *   - BearerAuth: []
+ */
 
 /**
  * @swagger
@@ -191,5 +219,28 @@ router.delete('/:id', protect, deleteConfiguration);
  *         description: "Erreur interne"
  */
 router.get('/:id/export-pdf', protect, exportConfigurationToPDF);
+
+
+/**
+ * @swagger
+ * /api/configurations:
+ *   get:
+ *     summary: "Récupérer toutes les configurations avec les détails de l'utilisateur"
+ *     description: "Cette route permet de récupérer toutes les configurations avec les détails de l'utilisateur."
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: "Liste des configurations avec les détails de l'utilisateur"
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Configuration'
+ *       500:
+ *         description: "Erreur interne"
+ */
+router.get('/', protect, adminOnly, getConfigurationsWithUserDetails);
 
 module.exports = router;
