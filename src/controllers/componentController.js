@@ -5,6 +5,7 @@ const Price = require('../models/Price');
 const getComponentsByCategory = async (req, res) => {
   try {
     const { categoryName } = req.params;
+    console.log('Category Name:', categoryName);
 
     // Vérifier si la catégorie existe par son nom
     const categoryExists = await Category.findOne({
@@ -70,7 +71,7 @@ const getComponentDetails = async (req, res) => {
     // Récupérer le composant et sa catégorie
     const component = await Component.findById(id).populate('category');
     if (!component) {
-      return res.status(404).json({ message: 'Composant inexistant' });
+      return res.status(404).json({ message: 'Composant non trouvé' });
     }
 
     // Récupérer les prix associés à ce composant

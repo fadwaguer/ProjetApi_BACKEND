@@ -75,7 +75,10 @@ const { protect, adminOnly, publicAccess } = require('../middleware/authMiddlewa
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Category'
+ *             type: string
+ *             description: Nom de la catégorie
+ *             example:
+ *               name: "Cartes Mères"
  *     responses:
  *       201:
  *         description: "Catégorie créée avec succès"
@@ -138,7 +141,7 @@ const { protect, adminOnly, publicAccess } = require('../middleware/authMiddlewa
  *   delete:
  *     summary: Supprimer une catégorie (admin only)
  *     tags: [Categories]
- *     description: "Supprimer une catégorie existante par son ID."
+ *     description: "Supprimer une catégorie existante par son ID. Si des composants sont associés à cette catégorie, la suppression sera refusée."
  *     security:
  *       - BearerAuth: []
  *     parameters:
@@ -151,6 +154,8 @@ const { protect, adminOnly, publicAccess } = require('../middleware/authMiddlewa
  *     responses:
  *       200:
  *         description: "Catégorie supprimée avec succès"
+ *       400:
+ *         description: "Impossible de supprimer la catégorie. Des composants y sont associés."
  *       404:
  *         description: "Catégorie non trouvée"
  *       500:

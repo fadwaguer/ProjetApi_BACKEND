@@ -1,4 +1,5 @@
 const Category = require('../models/Category');
+const Component = require('../models/Component');
 
 // Lister les catégories
 const getCategories = async (req, res) => {
@@ -31,10 +32,10 @@ const addCategory = async (req, res) => {
 const updateCategory = async (req, res) => {
   try {
     const { name } = req.body;
-    const { categoryName } = req.params;
+    const { id } = req.params;
 
     // Vérification si la catégorie à mettre à jour existe
-    const category = await Category.findOne({ name: { $regex: new RegExp('^' + categoryName + '$', 'i') } });
+    const category = await Category.findById(id);
     if (!category) {
       return res.status(404).json({ message: 'Catégorie non trouvée' });
     }
@@ -59,15 +60,18 @@ const updateCategory = async (req, res) => {
 // Supprimer une catégorie
 const deleteCategory = async (req, res) => {
   try {
-    const { categoryName } = req.params;
+    const { id } = req.params;
 
-    // Recherche insensible à la casse pour la catégorie
-    const category = await Category.findOne({ name: { $regex: new RegExp('^' + categoryName + '$', 'i') } });
+    // Vérifier si des composants sont associés à cette catégorie
+    const associatedComponents = await Component.findOne({ category: id });
+    if (associatedComponents) {
+      return res.status(400).json({ message: 'Impossible de supprimer la catégorie. Des composants y sont associés.' });
+    }
+
+    const category = await Category.findByIdAndDelete(id);
     if (!category) {
       return res.status(404).json({ message: 'Catégorie non trouvée' });
     }
-
-    await category.remove();
     res.status(200).json({ message: 'Catégorie supprimée avec succès' });
   } catch (error) {
     res.status(500).json({ message: 'Erreur lors de la suppression de la catégorie', error });
