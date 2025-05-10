@@ -12,16 +12,20 @@ const { protect, adminOnly, publicAccess } = require('../middleware/authMiddlewa
  *       scheme: bearer
  *       bearerFormat: JWT
  *   schemas:
- *     Partner:
+ *     Category:
  *       type: object
+ *       required:
+ *         - name
  *       properties:
  *         id:
  *           type: string
+ *           description: Identifiant unique de la catégorie
  *         name:
  *           type: string
- *         image:
- *           type: string
- *           description: URL de l'image
+ *           description: Nom de la catégorie
+ *       example:
+ *         id: "64b7e8345e4d9e0001e45dff"
+ *         name: "Processeurs"
  */
 
 /**
@@ -32,10 +36,18 @@ const { protect, adminOnly, publicAccess } = require('../middleware/authMiddlewa
 
 /**
  * @swagger
+ * tags:
+ *   name: Categories
+ *   description: API pour gérer les catégories
+ */
+
+/**
+ * @swagger
  * /api/categories:
  *   get:
- *     summary: "Lister toutes les catégories"
- *     description: "Cette route permet de récupérer toutes les catégories disponibles."
+ *     summary: Lister toutes les catégories
+ *     tags: [Categories]
+ *     description: "Récupérer la liste des catégories disponibles."
  *     responses:
  *       200:
  *         description: "Liste des catégories"
@@ -53,8 +65,11 @@ const { protect, adminOnly, publicAccess } = require('../middleware/authMiddlewa
  * @swagger
  * /api/categories:
  *   post:
- *     summary: "Ajouter une nouvelle catégorie"
- *     description: "Cette route permet d'ajouter une nouvelle catégorie."
+ *     summary: Ajouter une nouvelle catégorie (admin only)
+ *     tags: [Categories]
+ *     description: "Créer une nouvelle catégorie."
+ *     security:
+ *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -78,21 +93,30 @@ const { protect, adminOnly, publicAccess } = require('../middleware/authMiddlewa
  * @swagger
  * /api/categories/{id}:
  *   put:
- *     summary: "Mettre à jour une catégorie"
- *     description: "Cette route permet de mettre à jour une catégorie existante."
+ *     summary: Mettre à jour une catégorie (admin only)
+ *     tags: [Categories]
+ *     description: "Modifier une catégorie existante par son ID."
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: "Identifiant de la catégorie à mettre à jour"
+ *         description: ID de la catégorie
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Category'
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Nouveau nom de la catégorie
+ *             example:
+ *               name: "Cartes Graphiques"
  *     responses:
  *       200:
  *         description: "Catégorie mise à jour avec succès"
@@ -102,6 +126,8 @@ const { protect, adminOnly, publicAccess } = require('../middleware/authMiddlewa
  *               $ref: '#/components/schemas/Category'
  *       404:
  *         description: "Catégorie non trouvée"
+ *       400:
+ *         description: "Une catégorie avec ce nom existe déjà"
  *       500:
  *         description: "Erreur interne"
  */
@@ -110,15 +136,18 @@ const { protect, adminOnly, publicAccess } = require('../middleware/authMiddlewa
  * @swagger
  * /api/categories/{id}:
  *   delete:
- *     summary: "Supprimer une catégorie"
- *     description: "Cette route permet de supprimer une catégorie existante."
+ *     summary: Supprimer une catégorie (admin only)
+ *     tags: [Categories]
+ *     description: "Supprimer une catégorie existante par son ID."
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: "Identifiant de la catégorie à supprimer"
+ *         description: ID de la catégorie
  *     responses:
  *       200:
  *         description: "Catégorie supprimée avec succès"

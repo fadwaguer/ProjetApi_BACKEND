@@ -32,11 +32,12 @@ const getComponentsByCategory = async (req, res) => {
         .map(price => ({
           partnerId: price.partner._id,
           partnerName: price.partner.name,
-          partnerImage: price.partner.image
-            ? `data:${price.partner.image.contentType};base64,${price.partner.image.data.toString('base64')}`
-            : null,
           price: price.price,
         }));
+
+      const image = component.image && component.image.data
+        ? `data:${component.image.contentType};base64,${component.image.data.toString('base64')}`
+        : null;
 
       return {
         id: component._id,
@@ -44,6 +45,7 @@ const getComponentsByCategory = async (req, res) => {
         category: categoryExists.name,
         brand: component.brand,
         specs: component.specs,
+        image: image,
         prices: componentPrices,
       };
     });
@@ -78,11 +80,12 @@ const getComponentDetails = async (req, res) => {
     const formattedPrices = prices.map(price => ({
       partnerId: price.partner._id,
       partnerName: price.partner.name,
-      partnerImage: price.partner.image
-        ? `data:${price.partner.image.contentType};base64,${price.partner.image.data.toString('base64')}`
-        : null,
       price: price.price,
     }));
+
+    const image = component.image && component.image.data
+        ? `data:${component.image.contentType};base64,${component.image.data.toString('base64')}`
+        : null;
 
     res.status(200).json({
       component: {
@@ -91,8 +94,9 @@ const getComponentDetails = async (req, res) => {
         category: component.category,
         brand: component.brand,
         specs: component.specs,
-      },
-      prices: formattedPrices,
+        image: image,
+        prices: formattedPrices
+      }
     });
   } catch (error) {
     console.error(error);
@@ -107,7 +111,7 @@ const getComponentDetails = async (req, res) => {
 // Ajouter un composant
 const addComponent = async (req, res) => {
   try {
-    const { name, category, ...otherAttributes } = req.body;
+    const { name, category, brand, specs } = req.body;
 
     if (!name || !category) {
       return res.status(400).json({ message: 'Le nom et la catégorie du composant sont requis.' });
@@ -125,10 +129,32 @@ const addComponent = async (req, res) => {
       return res.status(400).json({ message: 'Le composant existe déjà dans cette catégorie.' });
     }
 
+    let parsedSpecs = specs;
+    if (typeof specs === 'string') {
+      try {
+        parsedSpecs = JSON.parse(specs); // Convertir la chaîne en objet
+      } catch (error) {
+        return res.status(400).json({ message: 'Le format des spécifications est invalide.', error: error.message });
+      }
+    }
+
+    let image = null;
+    if (req.file) {
+      if (!['image/jpeg', 'image/png'].includes(req.file.mimetype)) {
+        return res.status(400).json({ message: 'Format d\'image non pris en charge. Seuls JPEG et PNG sont autorisés.' });
+      }
+      image = {
+        data: req.file.buffer,
+        contentType: req.file.mimetype,
+      };
+    }
+
     const component = new Component({
       name,
       category: categoryExists._id,
-      ...otherAttributes,
+      brand,
+      specs: parsedSpecs,
+      image,
     });
     await component.save();
     res.status(201).json(component);
@@ -142,7 +168,7 @@ const addComponent = async (req, res) => {
 const updateComponent = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, category, ...otherAttributes } = req.body;
+    const { name, category, brand, specs } = req.body;
 
     const component = await Component.findById(id);
     if (!component) {
@@ -159,17 +185,41 @@ const updateComponent = async (req, res) => {
     }
 
     // Vérifier si un autre composant existe déjà avec le même nom dans la catégorie
-    if (categoryExists) {
-      const existingComponent = await Component.findOne({ name, category: categoryExists._id, _id: { $ne: id } });
+    if (name || categoryExists) {
+      const existingComponent = await Component.findOne({
+        name: name || component.name,
+        category: categoryExists ? categoryExists._id : component.category,
+        _id: { $ne: id }, // Exclure le composant en cours de modification
+      });
       if (existingComponent) {
         return res.status(400).json({ message: 'Un composant avec ce nom existe déjà dans cette catégorie.' });
+      }
+    }
+
+    let parsedSpecs = specs;
+    if (typeof specs === 'string') {
+      try {
+        parsedSpecs = JSON.parse(specs); // Convertir la chaîne en objet
+      } catch (error) {
+        return res.status(400).json({ message: 'Le format des spécifications est invalide.', error: error.message });
       }
     }
 
     // Mise à jour des informations du composant
     component.name = name || component.name;
     component.category = category ? categoryExists._id : component.category;
-    Object.assign(component, otherAttributes);
+    component.brand = brand || component.brand;
+    component.specs = parsedSpecs || component.specs;
+
+    if (req.file) {
+      if (!['image/jpeg', 'image/png'].includes(req.file.mimetype)) {
+        return res.status(400).json({ message: 'Format d\'image non pris en charge. Seuls JPEG et PNG sont autorisés.' });
+      }
+      component.image = {
+        data: req.file.buffer,
+        contentType: req.file.mimetype,
+      };
+    }
 
     await component.save();
     res.status(200).json(component);

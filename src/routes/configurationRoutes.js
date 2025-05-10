@@ -21,16 +21,26 @@ const router = express.Router();
  *       scheme: bearer
  *       bearerFormat: JWT
  *   schemas:
- *     Partner:
+ *     Configuration:
  *       type: object
  *       properties:
  *         id:
  *           type: string
  *         name:
  *           type: string
- *         image:
- *           type: string
- *           description: URL de l'image
+ *         components:
+ *           type: array
+ *           items:
+ *             type: string
+ *         user:
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: string
+ *             email:
+ *               type: string
+ *             name:
+ *               type: string
  */
 
 /**
@@ -41,9 +51,17 @@ const router = express.Router();
 
 /**
  * @swagger
+ * tags:
+ *   name: Configurations
+ *   description: API pour gérer les configurations
+ */
+
+/**
+ * @swagger
  * /api/configurations:
  *   post:
  *     summary: "Créer une configuration"
+ *     tags: [Configurations]
  *     description: "Ajoute une nouvelle configuration pour un utilisateur."
  *     security:
  *       - BearerAuth: []
@@ -54,9 +72,9 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               userId:
+ *               email:
  *                 type: string
- *                 description: "Identifiant de l'utilisateur"
+ *                 description: "Email de l'utilisateur"
  *               name:
  *                 type: string
  *                 description: "Nom de la configuration"
@@ -80,6 +98,7 @@ router.post('/', protect, createConfiguration);
  * /api/configurations/user/{email}:
  *   get:
  *     summary: "Récupérer toutes les configurations d'un utilisateur"
+ *     tags: [Configurations]
  *     description: "Renvoie toutes les configurations d'un utilisateur basé sur son adresse e-mail."
  *     security:
  *       - BearerAuth: []
@@ -105,6 +124,7 @@ router.get('/user/:email', protect, getConfigurationsByUserEmail);
  * /api/configurations/{id}:
  *   get:
  *     summary: "Récupérer une configuration"
+ *     tags: [Configurations]
  *     description: "Renvoie les détails d'une configuration spécifique par ID."
  *     security:
  *       - BearerAuth: []
@@ -130,6 +150,7 @@ router.get('/:id', protect, getConfigurationById);
  * /api/configurations/{id}:
  *   put:
  *     summary: "Mettre à jour une configuration"
+ *     tags: [Configurations]
  *     description: "Met à jour les détails d'une configuration spécifique."
  *     security:
  *       - BearerAuth: []
@@ -170,6 +191,7 @@ router.put('/:id', protect, updateConfiguration);
  * /api/configurations/{id}:
  *   delete:
  *     summary: "Supprimer une configuration"
+ *     tags: [Configurations]
  *     description: "Supprime une configuration spécifique par ID."
  *     security:
  *       - BearerAuth: []
@@ -195,6 +217,7 @@ router.delete('/:id', protect, deleteConfiguration);
  * /api/configurations/{id}/export-pdf:
  *   get:
  *     summary: "Exporter une configuration en PDF"
+ *     tags: [Configurations]
  *     description: "Génère et télécharge un fichier PDF de la configuration spécifique."
  *     security:
  *       - BearerAuth: []
@@ -225,7 +248,8 @@ router.get('/:id/export-pdf', protect, exportConfigurationToPDF);
  * @swagger
  * /api/configurations:
  *   get:
- *     summary: "Récupérer toutes les configurations avec les détails de l'utilisateur"
+ *     summary: "Récupérer toutes les configurations avec les détails de l'utilisateur (admin only)"
+ *     tags: [Configurations]
  *     description: "Cette route permet de récupérer toutes les configurations avec les détails de l'utilisateur."
  *     security:
  *       - BearerAuth: []

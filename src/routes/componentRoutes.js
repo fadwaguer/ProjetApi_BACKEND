@@ -7,6 +7,7 @@ const {
   deleteComponent,
 } = require('../controllers/componentController');
 const { protect, publicAccess, adminOnly } = require('../middleware/authMiddleware');
+const upload = require('../middleware/uploadMiddleware');
 
 const router = express.Router();
 
@@ -19,16 +20,33 @@ const router = express.Router();
  *       scheme: bearer
  *       bearerFormat: JWT
  *   schemas:
- *     Partner:
+ *     Component:
  *       type: object
  *       properties:
  *         id:
  *           type: string
  *         name:
  *           type: string
+ *         category:
+ *           type: string
+ *         brand:
+ *           type: string
+ *         specs:
+ *           type: object
  *         image:
  *           type: string
- *           description: URL de l'image
+ *           description: Image encodée en base64
+ *         prices:
+ *           type: array
+ *           items:
+ *             type: object
+ *             properties:
+ *               partnerId:
+ *                 type: string
+ *               partnerName:
+ *                 type: string
+ *               price:
+ *                 type: number
  */
 
 /**
@@ -39,17 +57,25 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/components/category/{categoryId}:
+ * tags:
+ *   name: Composants
+ *   description: API pour gérer les composants
+ */
+
+/**
+ * @swagger
+ * /api/components/category/{categoryName}:
  *   get:
  *     summary: "Lister les composants d'une catégorie"
- *     description: "Cette route permet de récupérer tous les composants associés à une catégorie spécifique."
+ *     tags: [Composants]
+ *     description: "Récupère tous les composants associés à une catégorie spécifique."
  *     parameters:
  *       - in: path
- *         name: categoryId
+ *         name: categoryName
  *         required: true
  *         schema:
  *           type: string
- *         description: "Identifiant de la catégorie"
+ *         description: "Nom de la catégorie"
  *     responses:
  *       200:
  *         description: "Liste des composants"
@@ -70,7 +96,8 @@ const router = express.Router();
  * /api/components/{id}:
  *   get:
  *     summary: "Détail d'un composant"
- *     description: "Cette route permet de récupérer les informations détaillées d'un composant spécifique."
+ *     tags: [Composants]
+ *     description: "Récupère les informations détaillées d'un composant spécifique."
  *     parameters:
  *       - in: path
  *         name: id
@@ -95,8 +122,11 @@ const router = express.Router();
  * @swagger
  * /api/components:
  *   post:
- *     summary: "Ajouter un composant"
- *     description: "Cette route permet d'ajouter un nouveau composant."
+ *     summary: "Ajouter un composant (admin only)"
+ *     tags: [Composants]
+ *     description: "Ajoute un nouveau composant."
+ *     security:
+ *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -111,7 +141,7 @@ const router = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/Component'
  *       400:
- *         description: "Le composant existe déjà dans cette catégorie"
+ *         description: "Erreur de validation"
  *       500:
  *         description: "Erreur interne"
  */
@@ -120,8 +150,11 @@ const router = express.Router();
  * @swagger
  * /api/components/{id}:
  *   put:
- *     summary: "Mettre à jour un composant"
- *     description: "Cette route permet de modifier un composant existant."
+ *     summary: "Mettre à jour un composant (admin only)"
+ *     tags: [Composants]
+ *     description: "Met à jour les informations d'un composant existant."
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -152,8 +185,11 @@ const router = express.Router();
  * @swagger
  * /api/components/{id}:
  *   delete:
- *     summary: "Supprimer un composant"
- *     description: "Cette route permet de supprimer un composant existant."
+ *     summary: "Supprimer un composant (admin only)"
+ *     tags: [Composants]
+ *     description: "Supprime un composant existant."
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -177,10 +213,10 @@ router.get('/category/:categoryName', publicAccess, getComponentsByCategory);
 router.get('/:id', publicAccess, getComponentDetails);
 
 // Ajouter un composant
-router.post('/', protect, adminOnly, addComponent);
+router.post('/', protect, adminOnly, upload.single('image'), addComponent);
 
 // Mettre à jour un composant
-router.put('/:id', protect, adminOnly, updateComponent);
+router.put('/:id', protect, adminOnly, upload.single('image'), updateComponent);
 
 // Supprimer un composant
 router.delete('/:id', protect, adminOnly, deleteComponent);

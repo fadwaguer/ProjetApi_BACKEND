@@ -45,12 +45,18 @@ const router = express.Router();
 
 /**
  * @swagger
+ * tags:
+ *   name: Partenaires
+ *   description: API pour gérer les partenaires marchands
+ */
+
+/**
+ * @swagger
  * /api/partners/component-prices:
  *   get:
  *     summary: Lister les prix pour tous les composants
+ *     tags: [Partenaires]
  *     description: Récupère les prix proposés par les partenaires pour chaque composant.
- *     security:
- *       - BearerAuth: []
  *     responses:
  *       200:
  *         description: Liste des prix par composant
@@ -63,7 +69,6 @@ const router = express.Router();
  *                 properties:
  *                   component:
  *                     type: string
- *                     description: Nom du composant
  *                   prices:
  *                     type: array
  *                     items:
@@ -71,12 +76,10 @@ const router = express.Router();
  *                       properties:
  *                         partner:
  *                           type: string
- *                           description: Nom du partenaire
  *                         price:
  *                           type: number
- *                           description: Prix du composant
  *       401:
- *         description: Non autorisé (token manquant ou invalide)
+ *         description: Non autorisé
  *       500:
  *         description: Erreur interne
  */
@@ -87,9 +90,8 @@ router.get('/component-prices', publicAccess, getPricesForAllComponents);
  * /api/partners/components/{componentId}/prices:
  *   get:
  *     summary: Lister les prix pour un composant spécifique
+ *     tags: [Partenaires]
  *     description: Récupère les prix associés à un composant donné.
- *     security:
- *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: componentId
@@ -99,22 +101,9 @@ router.get('/component-prices', publicAccess, getPricesForAllComponents);
  *         description: Identifiant du composant
  *     responses:
  *       200:
- *         description: Liste des prix pour le composant avec les partenaires
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   partner:
- *                     type: string
- *                     description: Nom du partenaire
- *                   price:
- *                     type: number
- *                     description: Prix du composant
+ *         description: Liste des prix pour le composant
  *       401:
- *         description: Non autorisé (token manquant ou invalide)
+ *         description: Non autorisé
  *       404:
  *         description: Composant non trouvé
  *       500:
@@ -127,9 +116,8 @@ router.get('/components/:componentId/prices', publicAccess, listPricesByComponen
  * /api/partners/calculate-cost:
  *   post:
  *     summary: Calculer le coût total d'une configuration
+ *     tags: [Partenaires]
  *     description: Calcule le coût total en fonction des composants sélectionnés.
- *     security:
- *       - BearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -143,7 +131,7 @@ router.get('/components/:componentId/prices', publicAccess, listPricesByComponen
  *       200:
  *         description: Coût total calculé
  *       401:
- *         description: Non autorisé (token manquant ou invalide)
+ *         description: Non autorisé
  *       400:
  *         description: Requête invalide
  *       500:
@@ -155,7 +143,8 @@ router.post('/calculate-cost', publicAccess, calculateTotalCost);
  * @swagger
  * /api/partners:
  *   post:
- *     summary: Ajouter un partenaire
+ *     summary: Ajouter un partenaire (admin only)
+ *     tags: [Partenaires]
  *     description: Ajoute un nouveau partenaire marchand avec un nom et une image optionnelle.
  *     security:
  *       - BearerAuth: []
@@ -168,48 +157,16 @@ router.post('/calculate-cost', publicAccess, calculateTotalCost);
  *             properties:
  *               name:
  *                 type: string
- *                 description: Le nom du partenaire
- *                 example: "TechSupply Co."
  *               image:
  *                 type: string
  *                 format: binary
- *                 description: L'image du partenaire (optionnel)
  *     responses:
  *       201:
  *         description: Partenaire ajouté avec succès
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Partenaire ajouté avec succès."
- *                 partner:
- *                   $ref: '#/components/schemas/Partner'
  *       400:
  *         description: Requête invalide
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Un partenaire avec ce nom existe déjà."
  *       500:
  *         description: Erreur interne
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Erreur lors de l'ajout du partenaire."
- *                 error:
- *                   type: string
- *                   example: "Détails de l'erreur interne."
  */
 router.post('/', protect, adminOnly, upload.single('image'), addPartner);
 
@@ -217,7 +174,8 @@ router.post('/', protect, adminOnly, upload.single('image'), addPartner);
  * @swagger
  * /api/partners/{id}:
  *   put:
- *     summary: Mettre à jour un partenaire
+ *     summary: Mettre à jour un partenaire (admin only)
+ *     tags: [Partenaires]
  *     description: Met à jour les informations d'un partenaire existant.
  *     security:
  *       - BearerAuth: []
@@ -227,7 +185,6 @@ router.post('/', protect, adminOnly, upload.single('image'), addPartner);
  *         required: true
  *         schema:
  *           type: string
- *         description: Identifiant du partenaire
  *     requestBody:
  *       required: true
  *       content:
@@ -237,8 +194,6 @@ router.post('/', protect, adminOnly, upload.single('image'), addPartner);
  *     responses:
  *       200:
  *         description: Partenaire mis à jour avec succès
- *       401:
- *         description: Non autorisé (token manquant ou invalide)
  *       404:
  *         description: Partenaire non trouvé
  *       500:
@@ -250,7 +205,8 @@ router.put('/:id', protect, adminOnly, updatePartner);
  * @swagger
  * /api/partners/{id}:
  *   delete:
- *     summary: Supprimer un partenaire
+ *     summary: Supprimer un partenaire (admin only)
+ *     tags: [Partenaires]
  *     description: Supprime un partenaire existant.
  *     security:
  *       - BearerAuth: []
@@ -260,12 +216,9 @@ router.put('/:id', protect, adminOnly, updatePartner);
  *         required: true
  *         schema:
  *           type: string
- *         description: Identifiant du partenaire
  *     responses:
  *       200:
  *         description: Partenaire supprimé avec succès
- *       401:
- *         description: Non autorisé (token manquant ou invalide)
  *       404:
  *         description: Partenaire non trouvé
  *       500:
@@ -278,32 +231,15 @@ router.delete('/:id', protect, adminOnly, deletePartner);
  * /api/partners:
  *   get:
  *     summary: Récupérer tous les partenaires marchands
+ *     tags: [Partenaires]
  *     description: Récupère tous les partenaires marchands enregistrés.
- *     security:
- *       - BearerAuth: []
  *     responses:
  *       200:
  *         description: Liste des partenaires
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   partnerName:
- *                     type: string
- *                     description: "Nom du partenaire"
- *                   partnerId:
- *                     type: string
- *                     description: "Identifiant du partenaire"
- *                   image:
- *                     type: string
- *                     description: "Type MIME de l'image du partenaire (si disponible)"
  *       401:
- *         description: "Non autorisé (token manquant ou invalide)"
+ *         description: Non autorisé
  *       500:
- *         description: "Erreur interne"
+ *         description: Erreur interne
  */
 router.get('/', publicAccess, getAllPartners);
 
@@ -311,8 +247,9 @@ router.get('/', publicAccess, getAllPartners);
  * @swagger
  * /api/partners/component-prices:
  *   post:
- *     summary: "Ajouter un prix pour un composant"
- *     description: "Ajoute un prix pour un composant proposé par un partenaire."
+ *     summary: Ajouter un prix pour un composant (admin only)
+ *     tags: [Partenaires]
+ *     description: Ajoute un prix pour un composant proposé par un partenaire.
  *     security:
  *       - BearerAuth: []
  *     requestBody:
@@ -324,22 +261,17 @@ router.get('/', publicAccess, getAllPartners);
  *             properties:
  *               partnerId:
  *                 type: string
- *                 description: "Identifiant du partenaire"
  *               componentId:
  *                 type: string
- *                 description: "Identifiant du composant"
  *               price:
  *                 type: number
- *                 description: "Prix du composant"
  *     responses:
  *       201:
- *         description: "Prix ajouté avec succès"
- *       401:
- *         description: "Non autorisé (token manquant ou invalide)"
+ *         description: Prix ajouté avec succès
  *       400:
- *         description: "Une erreur s'est produite, par exemple : prix déjà existant pour ce partenaire et composant"
+ *         description: Prix déjà existant
  *       500:
- *         description: "Erreur interne"
+ *         description: Erreur interne
  */
 router.post('/component-prices', protect, adminOnly, addPriceForComponent);
 
@@ -347,8 +279,9 @@ router.post('/component-prices', protect, adminOnly, addPriceForComponent);
  * @swagger
  * /api/partners/component-prices/{id}:
  *   put:
- *     summary: "Mettre à jour un prix pour un composant"
- *     description: "Met à jour le prix d'un composant proposé par un partenaire."
+ *     summary: Mettre à jour un prix pour un composant (admin only)
+ *     tags: [Partenaires]
+ *     description: Met à jour le prix d'un composant proposé par un partenaire.
  *     security:
  *       - BearerAuth: []
  *     parameters:
@@ -357,7 +290,6 @@ router.post('/component-prices', protect, adminOnly, addPriceForComponent);
  *         required: true
  *         schema:
  *           type: string
- *         description: "Identifiant du prix"
  *     requestBody:
  *       required: true
  *       content:
@@ -367,18 +299,13 @@ router.post('/component-prices', protect, adminOnly, addPriceForComponent);
  *             properties:
  *               price:
  *                 type: number
- *                 description: "Nouveau prix"
  *     responses:
  *       200:
- *         description: "Prix mis à jour avec succès"
- *       401:
- *         description: "Non autorisé (token manquant ou invalide)"
- *       400:
- *         description: "Le partenaire, le composant et le nouveau prix sont requis"
+ *         description: Prix mis à jour avec succès
  *       404:
- *         description: "Prix ou partenaire non trouvé"
+ *         description: Prix ou partenaire non trouvé
  *       500:
- *         description: "Erreur interne"
+ *         description: Erreur interne
  */
 router.put('/component-prices/:id', protect, adminOnly, updatePriceForComponent);
 
@@ -386,8 +313,9 @@ router.put('/component-prices/:id', protect, adminOnly, updatePriceForComponent)
  * @swagger
  * /api/partners/component-prices/{id}:
  *   delete:
- *     summary: "Supprimer un prix pour un composant"
- *     description: "Supprime le prix d'un composant proposé par un partenaire."
+ *     summary: Supprimer un prix pour un composant (admin only)
+ *     tags: [Partenaires]
+ *     description: Supprime le prix d'un composant proposé par un partenaire.
  *     security:
  *       - BearerAuth: []
  *     parameters:
@@ -396,16 +324,13 @@ router.put('/component-prices/:id', protect, adminOnly, updatePriceForComponent)
  *         required: true
  *         schema:
  *           type: string
- *         description: "Identifiant du prix"
  *     responses:
  *       200:
- *         description: "Prix supprimé avec succès"
- *       401:
- *         description: "Non autorisé (token manquant ou invalide)"
+ *         description: Prix supprimé avec succès
  *       404:
- *         description: "Prix non trouvé"
+ *         description: Prix non trouvé
  *       500:
- *         description: "Erreur interne"
+ *         description: Erreur interne
  */
 router.delete('/component-prices/:id', protect, adminOnly, deletePriceForComponent);
 
