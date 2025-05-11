@@ -21,6 +21,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/components', componentRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', require('./routes/userRoutes'));
+app.use('/api/prices', require('./routes/priceRoutes'));
 
 // Connect to MongoDB
 connectDB();

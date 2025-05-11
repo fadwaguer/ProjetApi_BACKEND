@@ -1,14 +1,8 @@
 const express = require('express');
 const {
-  getPricesForAllComponents,
-  listPricesByComponent,
-  calculateTotalCost,
   addPartner,
   updatePartner,
   deletePartner,
-  addPriceForComponent,
-  updatePriceForComponent,
-  deletePriceForComponent,
   getAllPartners,
 } = require('../controllers/partnerController');
 const { protect, publicAccess, adminOnly } = require('../middleware/authMiddleware');
@@ -52,95 +46,6 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/partners/component-prices:
- *   get:
- *     summary: Lister les prix pour tous les composants
- *     tags: [Partenaires]
- *     description: Récupère les prix proposés par les partenaires pour chaque composant.
- *     responses:
- *       200:
- *         description: Liste des prix par composant
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   component:
- *                     type: string
- *                   prices:
- *                     type: array
- *                     items:
- *                       type: object
- *                       properties:
- *                         partner:
- *                           type: string
- *                         price:
- *                           type: number
- *       401:
- *         description: Non autorisé
- *       500:
- *         description: Erreur interne
- */
-router.get('/component-prices', publicAccess, getPricesForAllComponents);
-
-/**
- * @swagger
- * /api/partners/components/{componentId}/prices:
- *   get:
- *     summary: Lister les prix pour un composant spécifique
- *     tags: [Partenaires]
- *     description: Récupère les prix associés à un composant donné.
- *     parameters:
- *       - in: path
- *         name: componentId
- *         required: true
- *         schema:
- *           type: string
- *         description: Identifiant du composant
- *     responses:
- *       200:
- *         description: Liste des prix pour le composant
- *       401:
- *         description: Non autorisé
- *       404:
- *         description: Composant non trouvé
- *       500:
- *         description: Erreur interne
- */
-router.get('/components/:componentId/prices', publicAccess, listPricesByComponent);
-
-/**
- * @swagger
- * /api/partners/calculate-cost:
- *   post:
- *     summary: Calculer le coût total d'une configuration
- *     tags: [Partenaires]
- *     description: Calcule le coût total en fonction des composants sélectionnés.
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: array
- *             items:
- *               type: string
- *               description: Identifiant du composant
- *     responses:
- *       200:
- *         description: Coût total calculé
- *       401:
- *         description: Non autorisé
- *       400:
- *         description: Requête invalide
- *       500:
- *         description: Erreur interne
- */
-router.post('/calculate-cost', publicAccess, calculateTotalCost);
-
-/**
- * @swagger
  * /api/partners:
  *   post:
  *     summary: Ajouter un partenaire (admin only)
@@ -157,6 +62,8 @@ router.post('/calculate-cost', publicAccess, calculateTotalCost);
  *             properties:
  *               name:
  *                 type: string
+ *                 description: Nom du partenaire
+ *                 example: "Amazon"
  *               image:
  *                 type: string
  *                 format: binary
@@ -188,9 +95,17 @@ router.post('/', protect, adminOnly, upload.single('image'), addPartner);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/Partner'
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Nom du partenaire
+ *                 example: "Amazon"
+ *               image:
+ *                 type: string
+ *                 format: binary
  *     responses:
  *       200:
  *         description: Partenaire mis à jour avec succès
@@ -199,7 +114,7 @@ router.post('/', protect, adminOnly, upload.single('image'), addPartner);
  *       500:
  *         description: Erreur interne
  */
-router.put('/:id', protect, adminOnly, updatePartner);
+router.put('/:id', protect, adminOnly, upload.single('image'), updatePartner);
 
 /**
  * @swagger
@@ -242,96 +157,5 @@ router.delete('/:id', protect, adminOnly, deletePartner);
  *         description: Erreur interne
  */
 router.get('/', publicAccess, getAllPartners);
-
-/**
- * @swagger
- * /api/partners/component-prices:
- *   post:
- *     summary: Ajouter un prix pour un composant (admin only)
- *     tags: [Partenaires]
- *     description: Ajoute un prix pour un composant proposé par un partenaire.
- *     security:
- *       - BearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               partnerId:
- *                 type: string
- *               componentId:
- *                 type: string
- *               price:
- *                 type: number
- *     responses:
- *       201:
- *         description: Prix ajouté avec succès
- *       400:
- *         description: Prix déjà existant
- *       500:
- *         description: Erreur interne
- */
-router.post('/component-prices', protect, adminOnly, addPriceForComponent);
-
-/**
- * @swagger
- * /api/partners/component-prices/{id}:
- *   put:
- *     summary: Mettre à jour un prix pour un composant (admin only)
- *     tags: [Partenaires]
- *     description: Met à jour le prix d'un composant proposé par un partenaire.
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               price:
- *                 type: number
- *     responses:
- *       200:
- *         description: Prix mis à jour avec succès
- *       404:
- *         description: Prix ou partenaire non trouvé
- *       500:
- *         description: Erreur interne
- */
-router.put('/component-prices/:id', protect, adminOnly, updatePriceForComponent);
-
-/**
- * @swagger
- * /api/partners/component-prices/{id}:
- *   delete:
- *     summary: Supprimer un prix pour un composant (admin only)
- *     tags: [Partenaires]
- *     description: Supprime le prix d'un composant proposé par un partenaire.
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     responses:
- *       200:
- *         description: Prix supprimé avec succès
- *       404:
- *         description: Prix non trouvé
- *       500:
- *         description: Erreur interne
- */
-router.delete('/component-prices/:id', protect, adminOnly, deletePriceForComponent);
 
 module.exports = router;

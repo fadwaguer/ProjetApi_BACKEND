@@ -186,9 +186,30 @@ const router = express.Router();
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
- *             $ref: '#/components/schemas/Component'
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: "Nom du composant"
+ *                 example: "Processeur Intel i7"
+ *               category:
+ *                 type: string
+ *                 description: "Nom de la catégorie"
+ *                 example: "Processeurs"
+ *               brand:
+ *                 type: string
+ *                 description: "Marque du composant"
+ *                 example: "Intel"
+ *               specs:
+ *                 type: object
+ *                 description: "Spécifications du composant"
+ *                 example: {"cores": 8, "threads": 16, "baseClock": "3.6GHz", "boostClock": "5.0GHz"}
+ *               image:
+ *                 type: string
+ *                 description: "Image du composant (base64)"
+ *                 format: binary
  *     responses:
  *       200:
  *         description: "Composant mis à jour avec succès"
