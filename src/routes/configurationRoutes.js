@@ -75,14 +75,17 @@ const router = express.Router();
  *               email:
  *                 type: string
  *                 description: "Email de l'utilisateur"
+ *                 example: "john.doe@example.com"
  *               name:
  *                 type: string
  *                 description: "Nom de la configuration"
+ *                 example: "Configuration Gaming"
  *               components:
  *                 type: array
  *                 items:
  *                   type: string
  *                   description: "Identifiants des composants"
+ *                 example: ["componentId1", "componentId2"]
  *     responses:
  *       201:
  *         description: "Configuration créée avec succès"
@@ -170,12 +173,14 @@ router.get('/:id', protect, getConfigurationById);
  *             properties:
  *               name:
  *                 type: string
- *                 description: "Nouveau nom de la configuration"
+ *                 description: "Nom de la configuration"
+ *                 example: "Configuration Gaming"
  *               components:
  *                 type: array
  *                 items:
  *                   type: string
  *                   description: "Identifiants des composants"
+ *                 example: ["componentId1", "componentId2"]
  *     responses:
  *       200:
  *         description: "Configuration mise à jour avec succès"
