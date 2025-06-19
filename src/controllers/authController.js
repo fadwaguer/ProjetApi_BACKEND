@@ -65,7 +65,7 @@ const login = async (req, res) => {
       { expiresIn: '7d' }
     );
 
-    res.status(200).json({ accessToken, refreshToken });
+    res.status(200).json({ accessToken, refreshToken, user});
   } catch (error) {
     res.status(500).json({
       message: 'Erreur lors de la connexion',
