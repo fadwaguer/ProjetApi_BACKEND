@@ -1,6 +1,8 @@
 const express = require('express');
 const connectDB = require('./config/db');
+const cors = require('cors');
 require('dotenv').config();
+
 const configurationRoutes = require('./routes/configurationRoutes');
 const partnerRoutes = require('./routes/partnerRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
@@ -8,7 +10,17 @@ const componentRoutes = require('./routes/componentRoutes');
 const authRoutes = require('./routes/authRoutes');
 const setupSwagger = require('./config/swagger');
 
+const corsOptions = {
+  origin: 'http://localhost:4200',
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  optionsSuccessStatus: 204
+};
+
 const app = express();
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Configure Swagger
