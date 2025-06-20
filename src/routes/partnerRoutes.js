@@ -1,12 +1,18 @@
-const express = require('express');
+const express = require("express");
 const {
   addPartner,
   updatePartner,
   deletePartner,
   getAllPartners,
-} = require('../controllers/partnerController');
-const { protect, publicAccess, adminOnly } = require('../middleware/authMiddleware');
-const upload = require('../middleware/uploadMiddleware');
+  getPartnerById,
+  getPartnerWithPrices,
+} = require("../controllers/partnerController");
+const {
+  protect,
+  publicAccess,
+  adminOnly,
+} = require("../middleware/authMiddleware");
+const upload = require("../middleware/uploadMiddleware");
 
 const router = express.Router();
 
@@ -75,7 +81,7 @@ const router = express.Router();
  *       500:
  *         description: Erreur interne
  */
-router.post('/', protect, adminOnly, upload.single('image'), addPartner);
+router.post("/", protect, adminOnly, upload.single("image"), addPartner);
 
 /**
  * @swagger
@@ -114,7 +120,7 @@ router.post('/', protect, adminOnly, upload.single('image'), addPartner);
  *       500:
  *         description: Erreur interne
  */
-router.put('/:id', protect, adminOnly, upload.single('image'), updatePartner);
+router.put("/:id", protect, adminOnly, upload.single("image"), updatePartner);
 
 /**
  * @swagger
@@ -139,7 +145,7 @@ router.put('/:id', protect, adminOnly, upload.single('image'), updatePartner);
  *       500:
  *         description: Erreur interne
  */
-router.delete('/:id', protect, adminOnly, deletePartner);
+router.delete("/:id", protect, adminOnly, deletePartner);
 
 /**
  * @swagger
@@ -156,6 +162,40 @@ router.delete('/:id', protect, adminOnly, deletePartner);
  *       500:
  *         description: Erreur interne
  */
-router.get('/', publicAccess, getAllPartners);
+router.get("/", publicAccess, getAllPartners);
+
+/**
+ * @swagger
+ * /api/partners:
+ *   get:
+ *     summary: Récupérer tous les partenaires marchands
+ *     tags: [Partenaires]
+ *     description: Récupère tous les partenaires marchands enregistrés.
+ *     responses:
+ *       200:
+ *         description: Liste des partenaires
+ *       401:
+ *         description: Non autorisé
+ *       500:
+ *         description: Erreur interne
+ */
+router.get("/:id", publicAccess, getPartnerById);
+
+/**
+ * @swagger
+ * /api/partners:
+ *   get:
+ *     summary: Récupérer tous les partenaires marchands
+ *     tags: [Partenaires]
+ *     description: Récupère tous les partenaires marchands enregistrés.
+ *     responses:
+ *       200:
+ *         description: Liste des partenaires
+ *       401:
+ *         description: Non autorisé
+ *       500:
+ *         description: Erreur interne
+ */
+router.get("/:id/prices", publicAccess, getPartnerWithPrices);
 
 module.exports = router;

@@ -1,13 +1,18 @@
-const express = require('express');
+const express = require("express");
 const {
+  getAllComponents,
   getComponentsByCategory,
   getComponentDetails,
   addComponent,
   updateComponent,
   deleteComponent,
-} = require('../controllers/componentController');
-const { protect, publicAccess, adminOnly } = require('../middleware/authMiddleware');
-const upload = require('../middleware/uploadMiddleware');
+} = require("../controllers/componentController");
+const {
+  protect,
+  publicAccess,
+  adminOnly,
+} = require("../middleware/authMiddleware");
+const upload = require("../middleware/uploadMiddleware");
 
 const router = express.Router();
 
@@ -247,20 +252,21 @@ const router = express.Router();
  *       500:
  *         description: "Erreur interne"
  */
+router.get("/", publicAccess, getAllComponents);
 
 // Lister les composants d'une catégorie
-router.get('/category/:categoryName', publicAccess, getComponentsByCategory);
+router.get("/category/:categoryName", publicAccess, getComponentsByCategory);
 
 // Détail d'un composant
-router.get('/:id', publicAccess, getComponentDetails);
+router.get("/:id", publicAccess, getComponentDetails);
 
 // Ajouter un composant
-router.post('/', protect, adminOnly, upload.single('image'), addComponent);
+router.post("/", protect, adminOnly, upload.single("image"), addComponent);
 
 // Mettre à jour un composant
-router.put('/:id', protect, adminOnly, upload.single('image'), updateComponent);
+router.put("/:id", protect, adminOnly, upload.single("image"), updateComponent);
 
 // Supprimer un composant
-router.delete('/:id', protect, adminOnly, deleteComponent);
+router.delete("/:id", protect, adminOnly, deleteComponent);
 
 module.exports = router;

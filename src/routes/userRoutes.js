@@ -1,7 +1,7 @@
-const express = require('express');
-const { getUsers } = require('../controllers/userController');
+const express = require("express");
+const { getUsers, getUserById } = require("../controllers/userController");
 const router = express.Router();
-const { protect, adminOnly } = require('../middleware/authMiddleware');
+const { protect, adminOnly } = require("../middleware/authMiddleware");
 
 /**
  * @swagger
@@ -60,5 +60,35 @@ const { protect, adminOnly } = require('../middleware/authMiddleware');
  *       500:
  *         description: Erreur interne
  */
-router.get('/', protect, adminOnly, getUsers);
+router.get("/", protect, adminOnly, getUsers);
+
+/**
+ * @swagger
+ * /api/users/{id}:
+ *   get:
+ *     summary: Récupérer un utilisateur par son ID (admin only)
+ *     tags: [Utilisateurs]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de l'utilisateur
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Détails de l'utilisateur
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: Utilisateur non trouvé
+ *       500:
+ *         description: Erreur serveur
+ */
+router.get("/:id", protect, adminOnly, getUserById);
+
 module.exports = router;
